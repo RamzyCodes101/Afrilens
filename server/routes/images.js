@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-const { v4: uuidv4 } = require('uuid');
 const { pool } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 
@@ -94,7 +93,7 @@ router.post('/', requireAdmin, upload.single('image'), async (req, res) => {
   if (!title || !category) return res.status(400).json({ error: 'title and category are required' });
 
   const result = await uploadToCloudinary(req.file.buffer);
-  const id = uuidv4();
+  const id = crypto.randomUUID();
 
   await pool.query(
     `INSERT INTO images (id, title, description, category, tags, url, public_id, original_name, mime_type, size)
