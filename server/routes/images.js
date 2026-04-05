@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('crypto');
 const { pool } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 
