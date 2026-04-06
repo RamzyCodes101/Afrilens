@@ -5,7 +5,12 @@
       "Bash(npm create:*)",
       "Bash(node -e \"require\\('./db'\\); console.log\\('DB OK'\\)\")",
       "Bash(node:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:www.sequel.co)",
+      "WebFetch(domain:pixlab.io)"
     ]
   }
 }

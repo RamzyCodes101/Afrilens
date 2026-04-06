@@ -1,15 +1,18 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Afrilens2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'afrilens_fallback_secret';
+
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
-  if (
-    username === process.env.ADMIN_USERNAME &&
-    password === process.env.ADMIN_PASSWORD
-  ) {
-    const token = jwt.sign({ role: 'admin', username }, process.env.JWT_SECRET, {
-      expiresIn: '7d',
-    });
+
+  const user = (username || '').trim();
+  const pass = (password || '').trim();
+
+  if (user === ADMIN_USERNAME.trim() && pass === ADMIN_PASSWORD.trim()) {
+    const token = jwt.sign({ role: 'admin', username: user }, JWT_SECRET, { expiresIn: '7d' });
     return res.json({ token });
   }
   return res.status(401).json({ error: 'Invalid credentials' });
