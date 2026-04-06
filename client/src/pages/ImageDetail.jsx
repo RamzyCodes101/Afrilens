@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
+import useIsMobile from '../hooks/useIsMobile';
 
 export default function ImageDetail() {
   const { id } = useParams();
@@ -10,6 +11,7 @@ export default function ImageDetail() {
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setImgLoaded(false);
@@ -63,7 +65,7 @@ export default function ImageDetail() {
       </div>
 
       {/* Main layout */}
-      <div style={s.layout}>
+      <div style={{ ...s.layout, gridTemplateColumns: isMobile ? '1fr' : '1fr 340px' }}>
 
         {/* Left — image viewer */}
         <div style={s.viewer}>
@@ -207,7 +209,7 @@ const s = {
 
   topBar: {
     display: 'flex', alignItems: 'center', gap: '16px',
-    padding: '16px 32px', borderBottom: '1px solid rgba(255,255,255,0.05)',
+    padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)',
   },
   backBtn: {
     display: 'flex', alignItems: 'center', gap: '6px',
@@ -228,7 +230,7 @@ const s = {
   },
 
   // Viewer
-  viewer: { padding: '32px', borderRight: '1px solid rgba(255,255,255,0.05)', overflowY: 'auto' },
+  viewer: { padding: '16px', borderRight: '1px solid rgba(255,255,255,0.05)', overflowY: 'auto' },
   imageContainer: {
     position: 'relative', background: '#0d0d0d',
     borderRadius: '16px', overflow: 'hidden',

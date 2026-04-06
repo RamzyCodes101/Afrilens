@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
+import useIsMobile from '../hooks/useIsMobile';
 
 const CATEGORIES = [
   'Photography', 'Art', 'Nature', 'People', 'Architecture',
@@ -20,6 +21,7 @@ export default function AdminUpload() {
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
 
+  const isMobile = useIsMobile();
   if (!isAdmin) { navigate('/login'); return null; }
 
   const handleFile = (f) => {
@@ -85,7 +87,7 @@ export default function AdminUpload() {
         )}
 
         <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.grid}>
+          <div style={{ ...styles.grid, gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr' }}>
             {/* Drop zone */}
             <div
               style={{
@@ -189,7 +191,7 @@ export default function AdminUpload() {
 }
 
 const styles = {
-  page: { minHeight: '100vh', background: '#080808', padding: '40px' },
+  page: { minHeight: '100vh', background: '#080808', padding: 'clamp(20px, 4vw, 40px)' },
   container: { maxWidth: '960px', margin: '0 auto' },
 
   header: {

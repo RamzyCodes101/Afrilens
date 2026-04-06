@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import IMAGES from '../config/images';
+import useIsMobile from '../hooks/useIsMobile';
 
 /* ─── Scroll reveal hook ─── */
 function useReveal(threshold = 0.12) {
@@ -35,6 +36,7 @@ function Reveal({ children, delay = 0, y = 40, style = {} }) {
 export default function Landing() {
   const [scrolled, setScrolled] = useState(false);
   const [heroLoaded, setHeroLoaded] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -104,7 +106,7 @@ export default function Landing() {
       </div>
 
       {/* ── About ── */}
-      <section id="about" style={s.about}>
+      <section id="about" style={{ ...s.about, padding: isMobile ? '80px 24px' : '140px 48px' }}>
         <Reveal>
           <p style={s.sectionTag}>About AfriLens</p>
         </Reveal>
@@ -133,13 +135,13 @@ export default function Landing() {
       </section>
 
       {/* ── Feature Grid ── */}
-      <section id="stories" style={s.featureSection}>
+      <section id="stories" style={{ ...s.featureSection, padding: isMobile ? '0 24px 80px' : '0 48px 140px' }}>
         <Reveal style={s.featureHeaderWrap}>
           <p style={s.sectionTag}>Selected works</p>
           <Link to="/gallery" style={s.featureSeeAll}>View all images →</Link>
         </Reveal>
 
-        <div style={s.featureGrid}>
+        <div style={{ ...s.featureGrid, gridTemplateColumns: isMobile ? '1fr' : '1.6fr 1fr' }}>
           {/* Row 1 */}
           <Reveal delay={0} style={s.featureItemLarge}>
             <FeatureCard img={IMAGES.feature1} title="People of the Sahel" category="Photography" />
@@ -158,7 +160,7 @@ export default function Landing() {
       </section>
 
       {/* ── Story / Editorial ── */}
-      <section style={s.story}>
+      <section style={{ ...s.story, padding: isMobile ? '80px 24px' : '140px 48px', flexDirection: isMobile ? 'column' : 'row' }}>
         <Reveal style={s.storyText}>
           <p style={s.sectionTag}>Our mission</p>
           <h2 style={s.storyHeadline}>
@@ -182,7 +184,7 @@ export default function Landing() {
       </section>
 
       {/* ── Stats ── */}
-      <section style={s.statsSection}>
+      <section style={{ ...s.statsSection, padding: isMobile ? '60px 24px' : '100px 48px' }}>
         <Reveal>
           <div style={s.statsGrid}>
             {[
@@ -282,7 +284,7 @@ const s = {
   nav: {
     position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '0 48px', height: '68px',
+    padding: '0 24px', height: '64px',
     transition: 'background 0.4s ease, border-color 0.4s ease',
     borderBottom: '1px solid transparent',
   },
@@ -325,7 +327,7 @@ const s = {
   },
   heroContent: {
     position: 'relative', zIndex: 2,
-    padding: '0 48px', maxWidth: '800px',
+    padding: '0 24px', maxWidth: '800px',
   },
   heroLabel: {
     fontSize: '11px', color: 'rgba(245,245,240,0.5)', fontWeight: '600',
@@ -358,8 +360,8 @@ const s = {
     paddingBottom: '2px', fontWeight: '450',
   },
   heroBottom: {
-    position: 'absolute', bottom: '40px', left: '48px', zIndex: 2,
-    display: 'flex', alignItems: 'center', gap: '28px',
+    position: 'absolute', bottom: '32px', left: '24px', zIndex: 2,
+    display: 'flex', alignItems: 'center', gap: '20px',
   },
   heroStat: { display: 'flex', flexDirection: 'column', gap: '2px' },
   heroStatNum: { fontSize: '22px', fontWeight: '800', color: '#f5f5f0', lineHeight: 1 },
@@ -454,7 +456,7 @@ const s = {
     borderBottom: '1px solid rgba(255,255,255,0.05)',
     background: '#080808',
   },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'rgba(255,255,255,0.05)', maxWidth: '1100px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1px', background: 'rgba(255,255,255,0.05)', maxWidth: '1100px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden' },
   statCard: { background: '#080808', padding: '48px 36px', display: 'flex', flexDirection: 'column', gap: '16px' },
   statNum: {
     fontFamily: "'Playfair Display', serif",

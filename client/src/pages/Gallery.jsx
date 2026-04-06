@@ -2,9 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../api';
 import ImageCard from '../components/ImageCard';
 import { useAuth } from '../context/AuthContext';
+import useIsMobile from '../hooks/useIsMobile';
 
 export default function Gallery() {
   const { isAdmin } = useAuth();
+  const isMobile = useIsMobile();
   const [images, setImages] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -150,7 +152,7 @@ const styles = {
   // Hero
   hero: {
     position: 'relative', overflow: 'hidden',
-    textAlign: 'center', padding: '100px 32px 80px',
+    textAlign: 'center', padding: 'clamp(60px,10vw,100px) 20px 60px',
     borderBottom: '1px solid rgba(255,255,255,0.04)',
   },
   heroGlow: {
@@ -196,9 +198,10 @@ const styles = {
   filterBar: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     flexWrap: 'wrap', gap: '12px',
-    padding: '20px 40px', borderBottom: '1px solid rgba(255,255,255,0.04)',
+    padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.04)',
+    overflowX: 'auto',
   },
-  filters: { display: 'flex', flexWrap: 'wrap', gap: '8px' },
+  filters: { display: 'flex', flexWrap: 'nowrap', gap: '8px', overflowX: 'auto', paddingBottom: '2px' },
   chip: {
     padding: '6px 16px', borderRadius: '20px',
     border: '1px solid rgba(255,255,255,0.08)',
@@ -217,12 +220,12 @@ const styles = {
   },
 
   // Gallery
-  galleryWrap: { padding: '32px 40px' },
+  galleryWrap: { padding: '24px 16px' },
   masonry: {
-    columns: 'auto 280px', columnGap: '12px',
+    columns: 'auto 260px', columnGap: '10px',
   },
   loadingGrid: {
-    columns: 'auto 280px', columnGap: '12px',
+    columns: 'auto 260px', columnGap: '10px',
   },
   skeleton: {
     background: 'linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%)',
