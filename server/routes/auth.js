@@ -1,9 +1,10 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Afrilens2026';
-const JWT_SECRET = process.env.JWT_SECRET || 'afrilens_fallback_secret';
+const strip = (val, fallback) => (val || fallback).replace(/^["']|["']$/g, '').trim();
+const ADMIN_USERNAME = strip(process.env.ADMIN_USERNAME, 'admin');
+const ADMIN_PASSWORD = strip(process.env.ADMIN_PASSWORD, 'Afrilens2026');
+const JWT_SECRET = strip(process.env.JWT_SECRET, 'afrilens_fallback_secret');
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
