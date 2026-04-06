@@ -16,6 +16,11 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/images', require('./routes/images'));
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/debug-env', (req, res) => res.json({
+  username: process.env.ADMIN_USERNAME,
+  passwordLength: process.env.ADMIN_PASSWORD?.length,
+  passwordFirst3: process.env.ADMIN_PASSWORD?.slice(0, 3),
+}));
 
 const PORT = process.env.PORT || 5000;
 
