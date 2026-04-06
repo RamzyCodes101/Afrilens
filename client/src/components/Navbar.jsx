@@ -80,11 +80,11 @@ const styles = {
   },
   logoIcon: { color: '#E8A020', fontSize: '20px' },
   links: { display: 'flex', alignItems: 'center', gap: '8px' },
-  link: { color: '#888', fontSize: '14px', fontWeight: '500', padding: '6px 12px', borderRadius: '8px', transition: 'color 0.2s' },
-  linkActive: { color: '#fff', background: 'rgba(255,255,255,0.06)' },
+  link: { color: '#fff', fontSize: '14px', fontWeight: '500', padding: '6px 12px', borderRadius: '8px', transition: 'color 0.2s' },
+  linkActive: { color: '#fff', background: 'rgba(255,255,255,0.1)' },
   adminBtn: { fontSize: '13px', fontWeight: '600', color: '#000', background: '#E8A020', padding: '7px 16px', borderRadius: '8px' },
-  logoutBtn: { fontSize: '13px', fontWeight: '500', color: '#888', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '7px 14px', borderRadius: '8px', cursor: 'pointer' },
-  hamburger: { background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' },
+  logoutBtn: { fontSize: '13px', fontWeight: '500', color: '#fff', background: 'none', border: '1px solid rgba(255,255,255,0.2)', padding: '7px 14px', borderRadius: '8px', cursor: 'pointer' },
+  hamburger: { background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' },
 
   // Mobile drawer
   drawer: {
@@ -95,7 +95,7 @@ const styles = {
     borderBottom: '1px solid rgba(255,255,255,0.08)',
     display: 'flex', flexDirection: 'column', padding: '16px 24px 24px', gap: '4px',
   },
-  drawerLink: { fontSize: '16px', color: '#ccc', fontWeight: '500', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' },
+  drawerLink: { fontSize: '16px', color: '#fff', fontWeight: '500', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' },
   drawerAdminBtn: { marginTop: '12px', fontSize: '15px', fontWeight: '700', color: '#000', background: '#E8A020', padding: '12px 20px', borderRadius: '10px', textAlign: 'center' },
   drawerLogout: { marginTop: '12px', fontSize: '15px', fontWeight: '500', color: '#888', background: 'none', border: '1px solid rgba(255,255,255,0.1)', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer' },
 };
