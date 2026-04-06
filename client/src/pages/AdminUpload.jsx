@@ -68,7 +68,7 @@ export default function AdminUpload() {
             <h1 style={styles.title}>Upload Image</h1>
             <p style={styles.sub}>Add a new image to the AfriLens library</p>
           </div>
-          <button onClick={() => navigate('/')} style={styles.viewBtn}>View Gallery →</button>
+          <button onClick={() => navigate('/gallery')} style={styles.viewBtn}>View Gallery →</button>
         </div>
 
         {success && (

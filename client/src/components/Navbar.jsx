@@ -19,7 +19,7 @@ export default function Navbar() {
       </Link>
 
       <div style={styles.links}>
-        <Link to="/" style={{ ...styles.link, ...(isActive('/') ? styles.linkActive : {}) }}>
+        <Link to="/gallery" style={{ ...styles.link, ...(isActive('/gallery') ? styles.linkActive : {}) }}>
           Gallery
         </Link>
         {isAdmin ? (
