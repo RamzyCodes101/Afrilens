@@ -1,459 +1,507 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../api';
+import IMAGES from '../config/images';
 
-function useReveal() {
+/* ─── Scroll reveal hook ─── */
+function useReveal(threshold = 0.12) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setVisible(true); obs.disconnect(); }
-    }, { threshold: 0.15 });
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { threshold });
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
   return [ref, visible];
 }
 
-function Reveal({ children, delay = 0, style = {} }) {
+function Reveal({ children, delay = 0, y = 40, style = {} }) {
   const [ref, visible] = useReveal();
   return (
-    <div
-      ref={ref}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(32px)',
-        transition: `opacity 0.9s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.9s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-        ...style,
-      }}
-    >
+    <div ref={ref} style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'none' : `translateY(${y}px)`,
+      transition: `opacity 1s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 1s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+      ...style,
+    }}>
       {children}
     </div>
   );
 }
 
 export default function Landing() {
-  const [previews, setPreviews] = useState([]);
-  const [scrollY, setScrollY] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+  const [heroLoaded, setHeroLoaded] = useState(false);
 
   useEffect(() => {
-    api.get('/images', { params: { limit: 6 } }).then(({ data }) => setPreviews(data.images)).catch(() => {});
-    const onScroll = () => setScrollY(window.scrollY);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
-    <div style={styles.page}>
+    <div style={s.page}>
 
-      {/* Nav */}
-      <nav style={styles.nav}>
-        <span style={styles.navLogo}>◈ AfriLens</span>
-        <div style={styles.navLinks}>
-          <Link to="/gallery" style={styles.navLink}>Gallery</Link>
-          <Link to="/login" style={styles.navLoginBtn}>Admin</Link>
+      {/* ── Navigation ── */}
+      <nav style={{ ...s.nav, ...(scrolled ? s.navScrolled : {}) }}>
+        <Link to="/" style={s.navLogo}>AfriLens</Link>
+        <div style={s.navCenter}>
+          <Link to="/gallery" style={s.navLink}>Gallery</Link>
+          <a href="#about" style={s.navLink}>About</a>
+          <a href="#stories" style={s.navLink}>Stories</a>
         </div>
+        <Link to="/gallery" style={s.navCta}>Explore collection</Link>
       </nav>
 
-      {/* Hero */}
-      <section style={styles.hero}>
-        <div style={{ ...styles.heroBg, transform: `translateY(${scrollY * 0.3}px)` }} />
-        <div style={styles.heroContent}>
-          <p style={styles.heroLabel}>
-            <span style={styles.heroDot} /> Est. 2026 · Free African Imagery
+      {/* ── Hero ── */}
+      <section style={s.hero}>
+        <img
+          src={IMAGES.hero}
+          alt="AfriLens hero"
+          style={{ ...s.heroBgImg, opacity: heroLoaded ? 1 : 0 }}
+          onLoad={() => setHeroLoaded(true)}
+        />
+        <div style={s.heroOverlay} />
+        <div style={s.heroContent}>
+          <p style={{ ...s.heroLabel, opacity: heroLoaded ? 1 : 0, transition: 'opacity 1s ease 0.3s' }}>
+            Free African Imagery
           </p>
-          <h1 style={styles.heroTitle}>
-            The world,<br />
-            <em style={styles.heroItalic}>through</em><br />
-            an African lens.
+          <h1 style={{ ...s.heroTitle, opacity: heroLoaded ? 1 : 0, transform: heroLoaded ? 'none' : 'translateY(30px)', transition: 'opacity 1.2s cubic-bezier(0.16,1,0.3,1) 0.5s, transform 1.2s cubic-bezier(0.16,1,0.3,1) 0.5s' }}>
+            Africa's story,<br />
+            <em style={s.heroEm}>freely told.</em>
           </h1>
-          <p style={styles.heroDesc}>
-            A curated library of free, high-quality photography and art<br />
-            celebrating the depth and beauty of African life.
+          <p style={{ ...s.heroSub, opacity: heroLoaded ? 1 : 0, transition: 'opacity 1s ease 0.9s' }}>
+            A curated library of high-quality photography and art<br />
+            celebrating the depth of African life. Free to use, forever.
           </p>
-          <div style={styles.heroCtas}>
-            <Link to="/gallery" style={styles.heroCtaPrimary}>
+          <div style={{ ...s.heroCtas, opacity: heroLoaded ? 1 : 0, transition: 'opacity 1s ease 1.1s' }}>
+            <Link to="/gallery" style={s.heroBtn}>
               Browse the collection
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </Link>
-            <a href="#about" style={styles.heroCtaSecondary}>Learn more</a>
+            <a href="#about" style={s.heroGhostBtn}>Our story</a>
           </div>
         </div>
-        <div style={styles.heroScroll}>
-          <div style={styles.heroScrollLine} />
-          <span style={styles.heroScrollText}>Scroll</span>
+        <div style={s.heroBottom}>
+          <div style={s.heroStat}><span style={s.heroStatNum}>100%</span><span style={s.heroStatLabel}>Free</span></div>
+          <div style={s.heroStatDivider} />
+          <div style={s.heroStat}><span style={s.heroStatNum}>HD</span><span style={s.heroStatLabel}>Quality</span></div>
+          <div style={s.heroStatDivider} />
+          <div style={s.heroStat}><span style={s.heroStatNum}>∞</span><span style={s.heroStatLabel}>Downloads</span></div>
         </div>
       </section>
 
-      {/* Marquee */}
-      <div style={styles.marqueeWrap}>
-        <div style={styles.marqueeTrack}>
-          {['Photography', 'Art', 'Culture', 'Wildlife', 'People', 'Architecture', 'Fashion', 'Nature', 'Free to use', 'High resolution',
-            'Photography', 'Art', 'Culture', 'Wildlife', 'People', 'Architecture', 'Fashion', 'Nature', 'Free to use', 'High resolution',
-          ].map((t, i) => (
-            <span key={i} style={styles.marqueeItem}>
-              {t} <span style={styles.marqueeDot}>◈</span>
-            </span>
+      {/* ── Ticker ── */}
+      <div style={s.ticker}>
+        <div style={s.tickerTrack}>
+          {Array(3).fill(['Photography', 'Art', 'Culture', 'Wildlife', 'People', 'Architecture', 'Fashion', 'Nature', 'Portraits', 'Landscapes']).flat().map((t, i) => (
+            <span key={i} style={s.tickerItem}>{t} <span style={s.tickerDot}>·</span></span>
           ))}
         </div>
       </div>
 
-      {/* About */}
-      <section id="about" style={styles.about}>
-        <div style={styles.aboutInner}>
-          <Reveal>
-            <p style={styles.sectionNum}>01</p>
+      {/* ── About ── */}
+      <section id="about" style={s.about}>
+        <Reveal>
+          <p style={s.sectionTag}>About AfriLens</p>
+        </Reveal>
+        <Reveal delay={120}>
+          <h2 style={s.aboutHeadline}>
+            The visual richness of Africa<br />
+            has always deserved a global stage.
+          </h2>
+        </Reveal>
+        <div style={s.aboutBody}>
+          <Reveal delay={200} style={{ flex: 1 }}>
+            <p style={s.aboutText}>
+              AfriLens was created out of a simple frustration: the world's most popular image libraries
+              consistently underrepresent Africa's landscapes, people, and cultures. We set out to change that —
+              one high-quality image at a time.
+            </p>
           </Reveal>
-          <Reveal delay={100}>
-            <h2 style={styles.aboutTitle}>
-              Africa has always been<br />
-              a world of stories.
-            </h2>
+          <Reveal delay={300} style={{ flex: 1 }}>
+            <p style={s.aboutText}>
+              Every image in our library is free to download, share, and use in your projects.
+              No watermarks, no paywalls, no barriers. Just authentic African imagery,
+              made accessible to the world.
+            </p>
           </Reveal>
-          <div style={styles.aboutCols}>
-            <Reveal delay={200} style={{ flex: 1 }}>
-              <p style={styles.aboutText}>
-                AfriLens was built because the world's visual platforms
-                consistently underrepresent African stories, landscapes, and people.
-                We believe that changes by making beautiful African imagery
-                freely accessible to everyone.
-              </p>
-            </Reveal>
-            <Reveal delay={300} style={{ flex: 1 }}>
-              <p style={styles.aboutText}>
-                Every image in our library is free to download and use.
-                No attribution required — though always appreciated.
-                Just beautiful imagery, available to all.
-              </p>
-            </Reveal>
-          </div>
         </div>
       </section>
 
-      {/* Preview Grid */}
-      {previews.length > 0 && (
-        <section style={styles.previewSection}>
-          <div style={styles.previewHeader}>
-            <Reveal>
-              <p style={styles.sectionNum}>02</p>
-              <h2 style={styles.previewTitle}>Selected works</h2>
-            </Reveal>
-            <Reveal delay={100}>
-              <Link to="/gallery" style={styles.seeAllLink}>
-                See all images →
-              </Link>
-            </Reveal>
-          </div>
-          <Reveal delay={200}>
-            <div style={styles.previewGrid}>
-              {previews.slice(0, 5).map((img, i) => (
-                <Link
-                  to={`/image/${img.id}`}
-                  key={img.id}
-                  style={{ ...styles.previewItem, ...getPreviewStyle(i) }}
-                >
-                  <img src={img.url} alt={img.title} style={styles.previewImg} />
-                  <div style={styles.previewOverlay}>
-                    <span style={styles.previewCat}>{img.category}</span>
-                    <span style={styles.previewName}>{img.title}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </Reveal>
-        </section>
-      )}
-
-      {/* Stats */}
-      <section style={styles.stats}>
-        <Reveal>
-          <div style={styles.statsInner}>
-            <p style={styles.sectionNum}>03</p>
-            <div style={styles.statsGrid}>
-              {[
-                { num: '100%', label: 'Free to use' },
-                { num: '∞', label: 'Downloads' },
-                { num: '0', label: 'Attribution required' },
-                { num: '1', label: 'Continent, infinite stories' },
-              ].map(({ num, label }) => (
-                <div key={label} style={styles.statItem}>
-                  <span style={styles.statNum}>{num}</span>
-                  <span style={styles.statLabel}>{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* ── Feature Grid ── */}
+      <section id="stories" style={s.featureSection}>
+        <Reveal style={s.featureHeaderWrap}>
+          <p style={s.sectionTag}>Selected works</p>
+          <Link to="/gallery" style={s.featureSeeAll}>View all images →</Link>
         </Reveal>
+
+        <div style={s.featureGrid}>
+          {/* Row 1 */}
+          <Reveal delay={0} style={s.featureItemLarge}>
+            <FeatureCard img={IMAGES.feature1} title="People of the Sahel" category="Photography" />
+          </Reveal>
+          <Reveal delay={100} style={s.featureItemSmall}>
+            <FeatureCard img={IMAGES.feature2} title="East African Light" category="Landscape" />
+          </Reveal>
+          {/* Row 2 */}
+          <Reveal delay={100} style={s.featureItemSmall}>
+            <FeatureCard img={IMAGES.feature3} title="Urban Stories" category="Culture" />
+          </Reveal>
+          <Reveal delay={0} style={s.featureItemLarge}>
+            <FeatureCard img={IMAGES.feature4} title="Wild Africa" category="Wildlife" />
+          </Reveal>
+        </div>
       </section>
 
-      {/* CTA */}
-      <section style={styles.cta}>
-        <div style={styles.ctaGlow} />
-        <Reveal>
-          <p style={styles.ctaEyebrow}>Ready to explore?</p>
-          <h2 style={styles.ctaTitle}>
-            The collection<br />awaits you.
+      {/* ── Story / Editorial ── */}
+      <section style={s.story}>
+        <Reveal style={s.storyText}>
+          <p style={s.sectionTag}>Our mission</p>
+          <h2 style={s.storyHeadline}>
+            "Africa is not a country —
+            it is a world of a billion stories."
           </h2>
-          <Link to="/gallery" style={styles.ctaBtn}>
-            Enter the gallery
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
+          <p style={s.storyBody}>
+            From the street markets of Lagos to the mountain peaks of Ethiopia,
+            from the coastlines of Senegal to the deserts of Namibia —
+            AfriLens exists to make that full spectrum visible.
+          </p>
+          <Link to="/gallery" style={s.storyBtn}>
+            Start exploring
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </Link>
         </Reveal>
+        <Reveal delay={150} style={s.storyImage}>
+          <img src={IMAGES.story} alt="African story" style={s.storyImg} />
+          <div style={s.storyImgOverlay} />
+        </Reveal>
       </section>
 
-      {/* Footer */}
-      <footer style={styles.footer}>
-        <div style={styles.footerLeft}>
-          <span style={styles.footerLogo}>◈ AfriLens</span>
-          <span style={styles.footerTagline}>Free African photography & art</span>
+      {/* ── Stats ── */}
+      <section style={s.statsSection}>
+        <Reveal>
+          <div style={s.statsGrid}>
+            {[
+              { num: '100%', desc: 'Free to download and use in any project' },
+              { num: 'HD', desc: 'High-resolution files, ready for print or web' },
+              { num: '0', desc: 'Attribution required — though always appreciated' },
+              { num: '∞', desc: 'Download limit — take as many as you need' },
+            ].map(({ num, desc }) => (
+              <div key={num} style={s.statCard}>
+                <span style={s.statNum}>{num}</span>
+                <div style={s.statDivider} />
+                <p style={s.statDesc}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ── CTA ── */}
+      <section style={s.ctaSection}>
+        <img src={IMAGES.cta} alt="" style={s.ctaBg} />
+        <div style={s.ctaOverlay} />
+        <div style={s.ctaContent}>
+          <Reveal>
+            <p style={s.ctaTag}>Ready?</p>
+            <h2 style={s.ctaHeadline}>
+              The collection<br />is waiting for you.
+            </h2>
+            <Link to="/gallery" style={s.ctaBtn}>
+              Enter the gallery
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </Link>
+          </Reveal>
         </div>
-        <div style={styles.footerRight}>
-          <Link to="/gallery" style={styles.footerLink}>Gallery</Link>
-          <Link to="/login" style={styles.footerLink}>Admin</Link>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer style={s.footer}>
+        <div style={s.footerTop}>
+          <div>
+            <p style={s.footerLogo}>AfriLens</p>
+            <p style={s.footerTagline}>Free African photography & art</p>
+          </div>
+          <div style={s.footerLinks}>
+            <div style={s.footerCol}>
+              <p style={s.footerColHead}>Explore</p>
+              <Link to="/gallery" style={s.footerLink}>Gallery</Link>
+              <a href="#about" style={s.footerLink}>About</a>
+            </div>
+            <div style={s.footerCol}>
+              <p style={s.footerColHead}>Access</p>
+              <Link to="/login" style={s.footerLink}>Admin</Link>
+              <Link to="/gallery" style={s.footerLink}>Browse free</Link>
+            </div>
+          </div>
+        </div>
+        <div style={s.footerBottom}>
+          <p style={s.footerCopy}>© 2026 AfriLens. All images free to use.</p>
         </div>
       </footer>
 
       <style>{`
-        @keyframes marquee {
+        @keyframes ticker {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(-33.33%); }
         }
-        @keyframes fadeDown {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes heroFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
-        .preview-item:hover img {
-          transform: scale(1.05);
-        }
-        .preview-item:hover .preview-overlay {
-          opacity: 1 !important;
-        }
+        .feature-card:hover .feature-overlay { opacity: 1 !important; }
+        .feature-card:hover img { transform: scale(1.06) !important; }
+        .nav-link:hover { color: #fff !important; }
+        .hero-btn:hover { background: #fff !important; }
+        .story-btn:hover { gap: 14px !important; }
       `}</style>
     </div>
   );
 }
 
-function getPreviewStyle(i) {
-  const layouts = [
-    { gridColumn: '1 / 3', gridRow: '1 / 3', aspectRatio: '16/10' },
-    { gridColumn: '3', gridRow: '1', aspectRatio: '1/1' },
-    { gridColumn: '3', gridRow: '2', aspectRatio: '1/1' },
-    { gridColumn: '1', gridRow: '3', aspectRatio: '4/3' },
-    { gridColumn: '2 / 4', gridRow: '3', aspectRatio: '16/9' },
-  ];
-  return layouts[i] || {};
+function FeatureCard({ img, title, category }) {
+  return (
+    <div className="feature-card" style={s.featureCard}>
+      <img src={img} alt={title} style={s.featureImg} />
+      <div className="feature-overlay" style={s.featureOverlay}>
+        <p style={s.featureCategory}>{category}</p>
+        <p style={s.featureTitle}>{title}</p>
+      </div>
+    </div>
+  );
 }
 
-const styles = {
-  page: { background: '#080808', color: '#f0f0f0', overflowX: 'hidden' },
+const s = {
+  page: { background: '#0e0e0e', color: '#f5f5f0', fontFamily: "'Inter', sans-serif", overflowX: 'hidden' },
 
   // Nav
   nav: {
-    position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+    position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '0 48px', height: '64px',
-    background: 'rgba(8,8,8,0.8)', backdropFilter: 'blur(20px)',
-    borderBottom: '1px solid rgba(255,255,255,0.04)',
-    animation: 'fadeDown 0.8s ease both',
+    padding: '0 48px', height: '68px',
+    transition: 'background 0.4s ease, border-color 0.4s ease',
+    borderBottom: '1px solid transparent',
   },
-  navLogo: { fontSize: '16px', fontWeight: '800', color: '#fff' },
-  navLinks: { display: 'flex', alignItems: 'center', gap: '8px' },
-  navLink: { fontSize: '13px', color: '#888', padding: '6px 12px', borderRadius: '8px' },
-  navLoginBtn: {
-    fontSize: '12px', fontWeight: '700', color: '#000',
-    background: '#E8A020', padding: '7px 16px', borderRadius: '8px',
+  navScrolled: {
+    background: 'rgba(14,14,14,0.9)',
+    backdropFilter: 'blur(20px)',
+    borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  navLogo: {
+    fontFamily: "'Playfair Display', serif",
+    fontSize: '20px', fontWeight: '800', color: '#f5f5f0',
+    letterSpacing: '-0.5px',
+  },
+  navCenter: { display: 'flex', gap: '4px' },
+  navLink: {
+    fontSize: '13px', color: '#666', padding: '7px 14px',
+    borderRadius: '8px', transition: 'color 0.2s',
+    fontWeight: '450',
+  },
+  navCta: {
+    fontSize: '13px', fontWeight: '600', color: '#0e0e0e',
+    background: '#f5f5f0', padding: '8px 18px', borderRadius: '8px',
+    transition: 'opacity 0.2s',
   },
 
   // Hero
   hero: {
-    position: 'relative', minHeight: '100vh',
-    display: 'flex', alignItems: 'center',
-    padding: '0 48px', overflow: 'hidden',
-    borderBottom: '1px solid rgba(255,255,255,0.04)',
+    position: 'relative', height: '100vh', minHeight: '600px',
+    display: 'flex', flexDirection: 'column',
+    justifyContent: 'center', overflow: 'hidden',
   },
-  heroBg: {
+  heroBgImg: {
+    position: 'absolute', inset: 0, width: '100%', height: '100%',
+    objectFit: 'cover', objectPosition: 'center',
+    transition: 'opacity 1.2s ease',
+  },
+  heroOverlay: {
     position: 'absolute', inset: 0,
-    background: 'radial-gradient(ellipse 80% 60% at 70% 50%, rgba(232,160,32,0.06) 0%, transparent 60%)',
-    pointerEvents: 'none',
+    background: 'linear-gradient(105deg, rgba(14,14,14,0.92) 0%, rgba(14,14,14,0.6) 50%, rgba(14,14,14,0.3) 100%)',
   },
   heroContent: {
-    position: 'relative', zIndex: 1,
-    maxWidth: '760px', paddingTop: '64px',
-    animation: 'fadeDown 1s cubic-bezier(0.16,1,0.3,1) both',
+    position: 'relative', zIndex: 2,
+    padding: '0 48px', maxWidth: '800px',
   },
   heroLabel: {
-    display: 'flex', alignItems: 'center', gap: '8px',
-    fontSize: '12px', color: '#555', fontWeight: '500',
-    letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '32px',
-  },
-  heroDot: {
-    display: 'inline-block', width: '6px', height: '6px',
-    background: '#E8A020', borderRadius: '50',
+    fontSize: '11px', color: 'rgba(245,245,240,0.5)', fontWeight: '600',
+    textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '28px',
   },
   heroTitle: {
     fontFamily: "'Playfair Display', serif",
-    fontSize: 'clamp(52px, 8vw, 100px)',
+    fontSize: 'clamp(52px, 7.5vw, 96px)',
     fontWeight: '900', lineHeight: 1.0,
-    color: '#fff', margin: '0 0 32px', letterSpacing: '-2px',
+    color: '#f5f5f0', margin: '0 0 28px',
+    letterSpacing: '-2.5px',
   },
-  heroItalic: { fontStyle: 'italic', color: '#E8A020' },
-  heroDesc: {
-    fontSize: '16px', color: '#555', lineHeight: 1.8,
-    maxWidth: '480px', margin: '0 0 48px',
+  heroEm: { fontStyle: 'italic', color: '#E8A020' },
+  heroSub: {
+    fontSize: '16px', color: 'rgba(245,245,240,0.55)',
+    lineHeight: 1.75, maxWidth: '460px',
+    margin: '0 0 44px', fontWeight: '400',
   },
-  heroCtas: { display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' },
-  heroCtaPrimary: {
+  heroCtas: { display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' },
+  heroBtn: {
     display: 'inline-flex', alignItems: 'center', gap: '10px',
-    background: '#E8A020', color: '#000', fontWeight: '800',
-    padding: '14px 28px', borderRadius: '12px', fontSize: '15px',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    boxShadow: '0 0 40px rgba(232,160,32,0.2)',
+    background: '#f5f5f0', color: '#0e0e0e',
+    fontWeight: '700', fontSize: '14px',
+    padding: '13px 26px', borderRadius: '10px',
+    transition: 'background 0.2s',
   },
-  heroCtaSecondary: {
-    fontSize: '14px', color: '#555', fontWeight: '500',
-    borderBottom: '1px solid #333', paddingBottom: '2px',
-    transition: 'color 0.2s',
+  heroGhostBtn: {
+    fontSize: '14px', color: 'rgba(245,245,240,0.55)',
+    borderBottom: '1px solid rgba(245,245,240,0.2)',
+    paddingBottom: '2px', fontWeight: '450',
   },
-  heroScroll: {
-    position: 'absolute', bottom: '40px', left: '48px',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+  heroBottom: {
+    position: 'absolute', bottom: '40px', left: '48px', zIndex: 2,
+    display: 'flex', alignItems: 'center', gap: '28px',
   },
-  heroScrollLine: {
-    width: '1px', height: '48px',
-    background: 'linear-gradient(#E8A020, transparent)',
-    animation: 'pulse 2s ease infinite',
-  },
-  heroScrollText: { fontSize: '10px', color: '#444', letterSpacing: '2px', textTransform: 'uppercase', writingMode: 'vertical-lr' },
+  heroStat: { display: 'flex', flexDirection: 'column', gap: '2px' },
+  heroStatNum: { fontSize: '22px', fontWeight: '800', color: '#f5f5f0', lineHeight: 1 },
+  heroStatLabel: { fontSize: '11px', color: 'rgba(245,245,240,0.4)', textTransform: 'uppercase', letterSpacing: '1px' },
+  heroStatDivider: { width: '1px', height: '32px', background: 'rgba(255,255,255,0.12)' },
 
-  // Marquee
-  marqueeWrap: {
-    overflow: 'hidden', padding: '16px 0',
-    borderTop: '1px solid rgba(255,255,255,0.04)',
-    borderBottom: '1px solid rgba(255,255,255,0.04)',
-    background: '#0a0a0a',
+  // Ticker
+  ticker: {
+    overflow: 'hidden', borderTop: '1px solid rgba(255,255,255,0.06)',
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
+    background: '#0a0a0a', padding: '14px 0',
   },
-  marqueeTrack: {
-    display: 'flex', whiteSpace: 'nowrap',
-    animation: 'marquee 30s linear infinite',
-  },
-  marqueeItem: { fontSize: '12px', color: '#333', fontWeight: '500', padding: '0 20px', letterSpacing: '1px', textTransform: 'uppercase' },
-  marqueeDot: { color: '#E8A020', margin: '0 4px' },
+  tickerTrack: { display: 'flex', animation: 'ticker 35s linear infinite', width: 'max-content' },
+  tickerItem: { fontSize: '11px', color: '#3a3a3a', textTransform: 'uppercase', letterSpacing: '2px', padding: '0 20px', fontWeight: '600', whiteSpace: 'nowrap' },
+  tickerDot: { color: '#E8A020', margin: '0 8px' },
 
   // About
-  about: { padding: '120px 48px' },
-  aboutInner: { maxWidth: '1100px', margin: '0 auto' },
-  sectionNum: { fontSize: '12px', color: '#333', letterSpacing: '2px', margin: '0 0 24px', fontFamily: 'monospace' },
-  aboutTitle: {
+  about: { padding: '140px 48px', maxWidth: '1200px', margin: '0 auto' },
+  sectionTag: { fontSize: '11px', color: '#E8A020', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '2.5px', marginBottom: '28px' },
+  aboutHeadline: {
     fontFamily: "'Playfair Display', serif",
-    fontSize: 'clamp(32px, 4vw, 56px)',
-    fontWeight: '800', color: '#fff', lineHeight: 1.15,
-    margin: '0 0 48px', letterSpacing: '-1px',
+    fontSize: 'clamp(30px, 3.5vw, 52px)',
+    fontWeight: '800', color: '#f5f5f0',
+    lineHeight: 1.15, letterSpacing: '-1px',
+    margin: '0 0 56px', maxWidth: '780px',
   },
-  aboutCols: { display: 'flex', gap: '48px', flexWrap: 'wrap' },
-  aboutText: { fontSize: '16px', color: '#555', lineHeight: 1.85, margin: 0 },
+  aboutBody: { display: 'flex', gap: '64px', flexWrap: 'wrap' },
+  aboutText: { fontSize: '15px', color: '#555', lineHeight: 1.9, margin: 0, fontWeight: '400' },
 
-  // Preview
-  previewSection: { padding: '0 48px 120px' },
-  previewHeader: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-    marginBottom: '32px', maxWidth: '1100px', margin: '0 auto 32px',
-  },
-  previewTitle: {
-    fontFamily: "'Playfair Display', serif",
-    fontSize: 'clamp(28px, 3vw, 44px)', fontWeight: '800',
-    color: '#fff', margin: '8px 0 0', letterSpacing: '-1px',
-  },
-  seeAllLink: {
-    fontSize: '13px', color: '#E8A020', fontWeight: '600',
-    borderBottom: '1px solid rgba(232,160,32,0.3)', paddingBottom: '2px',
-  },
-  previewGrid: {
+  // Feature Grid
+  featureSection: { padding: '0 48px 140px', maxWidth: '1200px', margin: '0 auto' },
+  featureHeaderWrap: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' },
+  featureSeeAll: { fontSize: '13px', color: '#E8A020', fontWeight: '600', borderBottom: '1px solid rgba(232,160,32,0.3)', paddingBottom: '2px' },
+  featureGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gridTemplateRows: 'auto',
-    gap: '8px', maxWidth: '1100px', margin: '0 auto',
+    gridTemplateColumns: '1.6fr 1fr',
+    gridTemplateRows: 'auto auto',
+    gap: '10px',
   },
-  previewItem: {
-    position: 'relative', overflow: 'hidden', borderRadius: '10px',
-    cursor: 'pointer', display: 'block',
+  featureItemLarge: {},
+  featureItemSmall: {},
+  featureCard: {
+    position: 'relative', borderRadius: '12px', overflow: 'hidden',
+    cursor: 'pointer', aspectRatio: '4/3',
   },
-  previewImg: {
+  featureImg: {
     width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-    transition: 'transform 0.6s cubic-bezier(0.4,0,0.2,1)',
+    transition: 'transform 0.7s cubic-bezier(0.4,0,0.2,1)',
   },
-  previewOverlay: {
+  featureOverlay: {
     position: 'absolute', inset: 0, opacity: 0,
-    background: 'linear-gradient(transparent 50%, rgba(0,0,0,0.8) 100%)',
+    background: 'linear-gradient(transparent 40%, rgba(0,0,0,0.75) 100%)',
     display: 'flex', flexDirection: 'column',
-    justifyContent: 'flex-end', padding: '16px',
-    transition: 'opacity 0.3s ease',
+    justifyContent: 'flex-end', padding: '20px',
+    transition: 'opacity 0.4s ease',
   },
-  previewCat: { fontSize: '10px', color: '#E8A020', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700', marginBottom: '4px' },
-  previewName: { fontSize: '13px', color: '#fff', fontWeight: '600' },
+  featureCategory: { fontSize: '10px', color: '#E8A020', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '700', margin: '0 0 4px' },
+  featureTitle: { fontSize: '15px', color: '#f5f5f0', fontWeight: '700', margin: 0 },
+
+  // Story
+  story: {
+    display: 'flex', gap: '80px', alignItems: 'center',
+    padding: '140px 48px', maxWidth: '1200px', margin: '0 auto',
+    flexWrap: 'wrap',
+  },
+  storyText: { flex: '1 1 360px', display: 'flex', flexDirection: 'column', gap: '24px' },
+  storyHeadline: {
+    fontFamily: "'Playfair Display', serif",
+    fontSize: 'clamp(24px, 2.8vw, 40px)',
+    fontWeight: '800', color: '#f5f5f0',
+    lineHeight: 1.25, letterSpacing: '-0.5px', margin: 0,
+    fontStyle: 'italic',
+  },
+  storyBody: { fontSize: '15px', color: '#555', lineHeight: 1.85, margin: 0 },
+  storyBtn: {
+    display: 'inline-flex', alignItems: 'center', gap: '10px',
+    fontSize: '14px', color: '#E8A020', fontWeight: '700',
+    borderBottom: '1px solid rgba(232,160,32,0.35)', paddingBottom: '3px',
+    width: 'fit-content', transition: 'gap 0.2s',
+  },
+  storyImage: { flex: '1 1 360px', position: 'relative', borderRadius: '16px', overflow: 'hidden' },
+  storyImg: { width: '100%', aspectRatio: '4/5', objectFit: 'cover', display: 'block' },
+  storyImgOverlay: {
+    position: 'absolute', inset: 0,
+    background: 'linear-gradient(transparent 60%, rgba(14,14,14,0.4) 100%)',
+  },
 
   // Stats
-  stats: {
-    padding: '120px 48px',
-    borderTop: '1px solid rgba(255,255,255,0.04)',
-    borderBottom: '1px solid rgba(255,255,255,0.04)',
-    background: '#0a0a0a',
+  statsSection: {
+    padding: '100px 48px',
+    borderTop: '1px solid rgba(255,255,255,0.05)',
+    borderBottom: '1px solid rgba(255,255,255,0.05)',
+    background: '#080808',
   },
-  statsInner: { maxWidth: '1100px', margin: '0 auto' },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '40px', marginTop: '24px' },
-  statItem: { display: 'flex', flexDirection: 'column', gap: '8px' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1px', background: 'rgba(255,255,255,0.05)', maxWidth: '1100px', margin: '0 auto', borderRadius: '16px', overflow: 'hidden' },
+  statCard: { background: '#080808', padding: '48px 36px', display: 'flex', flexDirection: 'column', gap: '16px' },
   statNum: {
     fontFamily: "'Playfair Display', serif",
-    fontSize: 'clamp(40px, 5vw, 72px)', fontWeight: '900',
-    color: '#fff', lineHeight: 1, letterSpacing: '-2px',
+    fontSize: 'clamp(44px, 5vw, 72px)', fontWeight: '900',
+    color: '#f5f5f0', lineHeight: 1, letterSpacing: '-2px',
   },
-  statLabel: { fontSize: '13px', color: '#444', lineHeight: 1.5 },
+  statDivider: { width: '32px', height: '2px', background: '#E8A020' },
+  statDesc: { fontSize: '13px', color: '#555', lineHeight: 1.6, margin: 0 },
 
   // CTA
-  cta: {
-    position: 'relative', textAlign: 'center',
-    padding: '160px 48px', overflow: 'hidden',
-  },
-  ctaGlow: {
-    position: 'absolute', top: '50%', left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '700px', height: '400px',
-    background: 'radial-gradient(ellipse, rgba(232,160,32,0.1) 0%, transparent 70%)',
-    pointerEvents: 'none',
-  },
-  ctaEyebrow: {
-    fontSize: '12px', color: '#E8A020', textTransform: 'uppercase',
-    letterSpacing: '3px', marginBottom: '24px', fontWeight: '600',
-  },
-  ctaTitle: {
+  ctaSection: { position: 'relative', overflow: 'hidden', textAlign: 'center', padding: '180px 48px' },
+  ctaBg: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' },
+  ctaOverlay: { position: 'absolute', inset: 0, background: 'rgba(14,14,14,0.82)' },
+  ctaContent: { position: 'relative', zIndex: 2 },
+  ctaTag: { fontSize: '11px', color: '#E8A020', textTransform: 'uppercase', letterSpacing: '3px', fontWeight: '700', marginBottom: '24px' },
+  ctaHeadline: {
     fontFamily: "'Playfair Display', serif",
-    fontSize: 'clamp(48px, 7vw, 88px)', fontWeight: '900',
-    color: '#fff', lineHeight: 1.05, letterSpacing: '-2px',
+    fontSize: 'clamp(44px, 7vw, 88px)',
+    fontWeight: '900', color: '#f5f5f0',
+    lineHeight: 1.0, letterSpacing: '-2.5px',
     margin: '0 0 48px',
   },
   ctaBtn: {
-    display: 'inline-flex', alignItems: 'center', gap: '10px',
-    background: '#E8A020', color: '#000',
-    fontWeight: '800', fontSize: '16px',
-    padding: '16px 36px', borderRadius: '14px',
-    boxShadow: '0 0 60px rgba(232,160,32,0.25)',
+    display: 'inline-flex', alignItems: 'center', gap: '12px',
+    background: '#f5f5f0', color: '#0e0e0e',
+    fontWeight: '800', fontSize: '15px',
+    padding: '15px 32px', borderRadius: '12px',
+    boxShadow: '0 0 80px rgba(245,245,240,0.1)',
     transition: 'transform 0.2s, box-shadow 0.2s',
   },
 
   // Footer
-  footer: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '24px 48px', borderTop: '1px solid rgba(255,255,255,0.04)',
-    flexWrap: 'wrap', gap: '12px',
+  footer: { background: '#080808', borderTop: '1px solid rgba(255,255,255,0.06)' },
+  footerTop: {
+    display: 'flex', justifyContent: 'space-between',
+    padding: '64px 48px 48px', flexWrap: 'wrap', gap: '40px',
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
   },
-  footerLeft: { display: 'flex', flexDirection: 'column', gap: '4px' },
-  footerLogo: { fontSize: '14px', fontWeight: '800', color: '#E8A020' },
-  footerTagline: { fontSize: '12px', color: '#333' },
-  footerRight: { display: 'flex', gap: '24px' },
-  footerLink: { fontSize: '13px', color: '#444' },
+  footerLogo: {
+    fontFamily: "'Playfair Display', serif",
+    fontSize: '24px', fontWeight: '800', color: '#f5f5f0', margin: '0 0 8px',
+  },
+  footerTagline: { fontSize: '13px', color: '#3a3a3a', margin: 0 },
+  footerLinks: { display: 'flex', gap: '64px' },
+  footerCol: { display: 'flex', flexDirection: 'column', gap: '12px' },
+  footerColHead: { fontSize: '11px', color: '#444', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: '700', margin: '0 0 4px' },
+  footerLink: { fontSize: '14px', color: '#555', transition: 'color 0.2s' },
+  footerBottom: { padding: '24px 48px' },
+  footerCopy: { fontSize: '12px', color: '#2a2a2a', margin: 0 },
 };
