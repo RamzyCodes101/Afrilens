@@ -12,6 +12,17 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Temp debug — remove after login works
+app.post('/api/test', (req, res) => {
+  res.json({
+    body: req.body,
+    contentType: req.headers['content-type'],
+    adminUser: process.env.ADMIN_USERNAME || '(not set)',
+    adminPassLen: (process.env.ADMIN_PASSWORD || '').length,
+  });
+});
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/images', require('./routes/images'));
