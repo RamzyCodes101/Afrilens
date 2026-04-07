@@ -1,29 +1,32 @@
 const BACKEND = 'https://afrilens-production.up.railway.app';
 
-export const config = { api: { bodyParser: false } };
+module.exports = async function handler(req, res) {
+  const url = `${BACKEND}${req.url}`;
 
-export default async function handler(req, res) {
-  const path = req.url.replace(/^\/api/, '/api');
-  const url = `${BACKEND}${path}`;
+  const headers = {};
+  if (req.headers['content-type']) headers['content-type'] = req.headers['content-type'];
+  if (req.headers['authorization']) headers['authorization'] = req.headers['authorization'];
 
-  const headers = { ...req.headers };
-  delete headers.host;
+  // Collect body
+  let body = undefined;
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    const chunks = [];
+    for await (const chunk of req) chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+    body = Buffer.concat(chunks);
+    if (body.length === 0) body = undefined;
+  }
 
   try {
-    const response = await fetch(url, {
-      method: req.method,
-      headers,
-      body: ['GET', 'HEAD'].includes(req.method) ? undefined : req,
-      duplex: 'half',
+    const upstream = await fetch(url, { method: req.method, headers, body });
+    res.status(upstream.status);
+    upstream.headers.forEach((val, key) => {
+      if (!['transfer-encoding', 'connection'].includes(key)) res.setHeader(key, val);
     });
-
-    response.headers.forEach((val, key) => {
-      if (key !== 'transfer-encoding') res.setHeader(key, val);
-    });
-    res.status(response.status);
-    const buf = await response.arrayBuffer();
+    const buf = await upstream.arrayBuffer();
     res.end(Buffer.from(buf));
   } catch (err) {
     res.status(502).json({ error: 'Proxy error', detail: err.message });
   }
-}
+};
+
+module.exports.config = { api: { bodyParser: false } };
