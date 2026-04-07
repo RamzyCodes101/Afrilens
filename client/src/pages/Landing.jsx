@@ -36,6 +36,7 @@ function Reveal({ children, delay = 0, y = 40, style = {} }) {
 export default function Landing() {
   const [scrolled, setScrolled] = useState(false);
   const [heroLoaded, setHeroLoaded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -44,19 +45,45 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const close = () => setMenuOpen(false);
+
   return (
     <div style={s.page}>
 
       {/* ── Navigation ── */}
       <nav style={{ ...s.nav, ...(scrolled ? s.navScrolled : {}) }}>
         <Link to="/" style={s.navLogo}>AfriLens</Link>
-        <div style={s.navCenter}>
-          <Link to="/gallery" style={s.navLink}>Gallery</Link>
-          <a href="#about" style={s.navLink}>About</a>
-          <a href="#stories" style={s.navLink}>Stories</a>
-        </div>
-        <Link to="/gallery" style={s.navCta}>Explore collection</Link>
+
+        {isMobile ? (
+          <button onClick={() => setMenuOpen(o => !o)} style={s.hamburger}>
+            {menuOpen ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            )}
+          </button>
+        ) : (
+          <>
+            <div style={s.navCenter}>
+              <Link to="/gallery" style={s.navLink}>Gallery</Link>
+              <a href="#about" style={s.navLink}>About</a>
+              <a href="#stories" style={s.navLink}>Stories</a>
+            </div>
+            <Link to="/gallery" style={s.navCta}>Explore collection</Link>
+          </>
+        )}
       </nav>
+
+      {/* ── Mobile drawer ── */}
+      {isMobile && menuOpen && (
+        <div style={s.drawer}>
+          <Link to="/gallery" style={s.drawerLink} onClick={close}>Gallery</Link>
+          <a href="#about" style={s.drawerLink} onClick={close}>About</a>
+          <a href="#stories" style={s.drawerLink} onClick={close}>Stories</a>
+          <Link to="/gallery" style={s.drawerCta} onClick={close}>Explore collection</Link>
+          <Link to="/login" style={s.drawerAdmin} onClick={close}>Admin Login</Link>
+        </div>
+      )}
 
       {/* ── Hero ── */}
       <section style={s.hero}>
@@ -308,6 +335,35 @@ const s = {
     fontSize: '13px', fontWeight: '600', color: '#0e0e0e',
     background: '#f5f5f0', padding: '8px 18px', borderRadius: '8px',
     transition: 'opacity 0.2s',
+  },
+  hamburger: {
+    background: 'none', border: 'none', color: '#fff',
+    cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center',
+  },
+  drawer: {
+    position: 'fixed', top: '64px', left: 0, right: 0, zIndex: 199,
+    background: 'rgba(10,10,10,0.97)',
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+    borderBottom: '1px solid rgba(255,255,255,0.08)',
+    display: 'flex', flexDirection: 'column',
+    padding: '16px 24px 28px', gap: '4px',
+  },
+  drawerLink: {
+    fontSize: '17px', color: '#fff', fontWeight: '500',
+    padding: '13px 0', borderBottom: '1px solid rgba(255,255,255,0.06)',
+  },
+  drawerCta: {
+    marginTop: '16px', textAlign: 'center',
+    background: '#f5f5f0', color: '#0e0e0e',
+    fontWeight: '700', fontSize: '15px',
+    padding: '13px 20px', borderRadius: '10px',
+  },
+  drawerAdmin: {
+    marginTop: '8px', textAlign: 'center',
+    background: 'none', border: '1px solid rgba(255,255,255,0.12)',
+    color: '#888', fontSize: '14px', fontWeight: '500',
+    padding: '12px 20px', borderRadius: '10px',
   },
 
   // Hero
